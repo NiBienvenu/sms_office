@@ -1,0 +1,19 @@
+// Dans votre contrôleur
+public function import(Request $request)
+{
+    // Stockage du fichier
+    $filePath = $request->file('file')->store('imports');
+
+    // Créer un enregistrement de progression dans la base de données
+    $importJob = ImportJob::create([
+        'file_path' => $filePath,
+        'status' => 'pending',
+        'params' => json_encode($request->all())
+    ]);
+
+    // Dispatch le job avec l'ID de la tâche
+    ProcessImportJob::dispatch($importJob->id);
+
+    return redirect()->route('grades.index')
+        ->with('success', 'L\'importation a démarré. Vous pouvez suivre sa progression dans la section "Importations".');
+}
